@@ -30,7 +30,8 @@ class State:
         bank_diff = self.my_bank - self.opponents_bank
         my_cards_sum = sum(self.my_cards)
         opponents_cards_sum = sum(self.opponents_cards)
-        return bank_diff + (my_cards_sum - opponents_cards_sum) * 1.0
+        value = bank_diff + (my_cards_sum - opponents_cards_sum) * 0.75   # 0.75 is appropriate after test(better than 0.5 and 1.0)
+        return value
     
     # Check if it is the terminal state
     def is_terminal_state(self):
