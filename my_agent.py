@@ -25,9 +25,12 @@ class State:
         # Assigned after my action, and assigned None again after the opponent's move and the new round starts
         self.my_action = None           
    
-    # Evaluation function
+    # Evaluation function: value is calculated according to the bank and cards of both sides
     def get_evaluation_value(self):
-        return self.my_bank - self.opponents_bank
+        bank_diff = self.my_bank - self.opponents_bank
+        my_cards_sum = sum(self.my_cards)
+        opponents_cards_sum = sum(self.opponents_cards)
+        return bank_diff + (my_cards_sum - opponents_cards_sum) * 1.0
     
     # Check if it is the terminal state
     def is_terminal_state(self):
@@ -61,11 +64,17 @@ class State:
             next_opponents_cards = tuple([card for card in self.opponents_cards if card != opponent_action]) # Get a new tuple of opponent's cards
 
             # Modify my_bank or opponents_bank by checking who win this bidding. If tie, add to the next bid.
-            if self.my_action > opponent_action:
-                next_my_bank += self.bidding_on
-            elif self.my_action < opponent_action:
-                next_opponents_bank += self.bidding_on
-            else:
+            if self.my_action > opponent_action: # I win
+                if self.bidding_on >= 0:
+                    next_my_bank += self.bidding_on
+                else:
+                    next_opponents_bank += self.bidding_on
+            elif self.my_action < opponent_action: # I lose
+                if self.bidding_on >= 0:
+                    next_opponents_bank += self.bidding_on
+                else:
+                    next_my_bank += self.bidding_on
+            else: # Draw
                 next_bidding_on += self.bidding_on
             
             # Generate a new state. In this state, both sides finish bidding and a new round starts
