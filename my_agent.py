@@ -1,17 +1,19 @@
-__author__ = "<your name>"
+__author__ = "Junyi Shen"
 __organization__ = "COSC343/AIML402, University of Otago"
-__email__ = "<your e-mail>"
+__email__ = "sheju347@student.otago.ac.nz"
 
 import numpy as np
 
 agentName = "Limited-depth-minimax"
 
+# Node in the search tree
 class Node:
     def __init__(self, state):
         self.state = state
         self.value = None
         self.best_child = None
 
+# State of a node
 class State:
     def __init__(self, bidding_on, items_left, my_cards, my_bank, opponents_bank, opponents_cards):
         self.bidding_on = bidding_on    # The value of the item to bid on. e.g. 4
@@ -24,18 +26,44 @@ class State:
         # The value of my action in this round. Should be None on the start of a round
         # Assigned after my action, and assigned None again after the opponent's move and the new round starts
         self.my_action = None           
+
+    def __str__(self):
+        return f"State: \nitems_left:{self.items_left}, bidding_on:{self.bidding_on}, \n\
+            my_cards:{self.my_cards}, my_action:{self.my_action}, opponents_cards:{self.opponents_cards}, \n\
+            my_bank:{self.my_bank}, opponents_bank:{self.opponents_bank}, \n\
+            is_terminal:{self.is_terminal_state()}, evaluation:{self.get_evaluation_value()}\n"
    
     # Evaluation function: value is calculated according to the bank and cards of both sides
     def get_evaluation_value(self):
+        # Compare cards one by one by positions after ranking
+        # Count the number of cards I have that are greater than the opponent's in each position
+        my_cards_sorted = list(self.my_cards[:])
+        if self.my_action != None:
+            my_cards_sorted.append(self.my_action)
+        my_cards_sorted.sort()
+        opponents_cards_sorted = sorted(self.opponents_cards)
+        card_value_compare_score = 0
+        for i in range(len(my_cards_sorted)):
+            if my_cards_sorted[i] > opponents_cards_sorted[i]:
+                card_value_compare_score += 1
+            elif my_cards_sorted[i] < opponents_cards_sorted[i]:
+                card_value_compare_score -= 1
+        
+        # Calculate the score for the items left
+        items_left_abs = [abs(card) for card in self.items_left]
+        items_left_abs.append(self.bidding_on)
+        items_left_abs_average = sum(items_left_abs) / len(items_left_abs)
+        items_left_score = items_left_abs_average * card_value_compare_score
+
+        # Calculate bank difference score
         bank_diff = self.my_bank - self.opponents_bank
-        my_cards_sum = sum(self.my_cards)
-        opponents_cards_sum = sum(self.opponents_cards)
-        value = bank_diff + (my_cards_sum - opponents_cards_sum) * 0.75   # 0.75 is appropriate after test(better than 0.5 and 1.0)
-        return value
+
+        score = items_left_score + bank_diff * 1.2
+        return score
     
     # Check if it is the terminal state
     def is_terminal_state(self):
-        return len(self.items_left) <= 1
+        return len(self.items_left) <= 0
     
     # Get all possible next states on my round
     def get_my_possible_next_states(self):
@@ -189,9 +217,9 @@ class RajAgent():
         bank = percepts[3] # e.g. 2
         opponents_cards = percepts[4:] # e.g. ((3, 4, 5, 6),)
 
-        # Note: Only consider that there's only one opponent
-        # Note: Percepts don't provide the opponent's bank, but I can simply assume it's 0.
-        # I simply calculate (my_bank - opponent_bank) in the evaluation function, so it doesn't matter what opponent_bank originally is.
+        # Note 1: Only consider that there's only one opponent
+        # Note 2: Percepts don't provide the opponent's bank, but I can simply assume it's 0.
+        # I calculate "my_bank - opponents_bank" in the evaluation function, so it doesn't matter what opponent_bank originally is.
         opponent_bank = 0
         root_state = State(bidding_on, items_left, my_cards, bank, opponent_bank, opponents_cards[0])
         root_node = Node(root_state)
