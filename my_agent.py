@@ -35,8 +35,8 @@ class State:
    
     # Evaluation function: value is calculated according to the bank and cards of both sides
     def get_evaluation_value(self):
-        # Compare cards one by one by positions after ranking
-        # Count the number of cards I have that are greater than the opponent's in each position
+        # Compare cards one by one by positions after sorting
+        # For each position, if my card is greater than the opponent's, score += 1, if less than the opponent's, score -= 1
         my_cards_sorted = list(self.my_cards[:])
         if self.my_action != None:
             my_cards_sorted.append(self.my_action)
@@ -49,17 +49,18 @@ class State:
             elif my_cards_sorted[i] < opponents_cards_sorted[i]:
                 card_value_compare_score -= 1
         
-        # Calculate the score for the items left
+        # Multiply compare score with the average value of the items left
         items_left_abs = [abs(card) for card in self.items_left]
         items_left_abs.append(self.bidding_on)
         items_left_abs_average = sum(items_left_abs) / len(items_left_abs)
-        items_left_score = items_left_abs_average * card_value_compare_score
+        potential_value = items_left_abs_average * card_value_compare_score
 
         # Calculate bank difference score
         bank_diff = self.my_bank - self.opponents_bank
 
-        score = items_left_score + bank_diff * 1.2
-        return score
+        # Score is calculated by 
+        total_score = potential_value + bank_diff * 1.2
+        return total_score
     
     # Check if it is the terminal state
     def is_terminal_state(self):
@@ -147,14 +148,10 @@ class RajAgent():
         self.item_values = item_values
 
     # Recursively get the best child of a node
-    def get_best_child(self, node, depth):
+    def get_best_child(self, node, depth, alpha, beta):
         state = node.state
         next_states = []
         is_max = depth % 2 == 0
-
-        # For Alpha-beta pruning
-        alpha = -999999
-        beta = 999999
 
         # If is max, then it's my turn. Otherwise, it's the opponent's turn.
         if is_max:
@@ -168,22 +165,29 @@ class RajAgent():
             # If already reaches the depth limit, or this child is already a terminal state, calculate the value of the child with evaluation function
             if next_depth == self.DEPTH_LIMIT or next_state.is_terminal_state():
                 child_node.value = next_state.get_evaluation_value()
-                # Alpha-beta pruning: if this child's value is not better, ignore all the subsequent siblings
-                if (is_max and child_node.value < alpha) or ((not is_max) and child_node.value > beta):
-                    continue
             else: # If not reaches the depth limit or terminal state, keep going deep
-                self.get_best_child(child_node, next_depth)
+                self.get_best_child(child_node, next_depth, alpha, beta)
 
             # Back up the value to parent if this child is better than the previous ones
             if node.value == None or (is_max and child_node.value > node.value) or ((not is_max) and child_node.value < node.value):
                 node.value = child_node.value
                 node.best_child = child_node
+
                 # Assign the new value of the parent to the alpha/beta value
                 if is_max:
                     alpha = max(alpha, node.value)
                 else:
                     beta = min(beta, node.value)
 
+                # Alpha-beta pruning
+                # alpha >= beta means:
+                # In MAX's level, the best value MAX can guarentee is greater than or equal to the best value for MIN in this branch, so MAX will not choose this branch
+                # In MIN's level, the best value MIN can guarentee is smaller than or equal to the best value for MAX in this branch, so MIN will not choose this branch
+                # Thus, the subsequent siblings don't need to be calculated because MAX or MIN has a better choice
+                if alpha >= beta:
+                    break
+
+        # Finally, return the best child of the root node
         return node.best_child
 
 
@@ -224,7 +228,7 @@ class RajAgent():
         root_state = State(bidding_on, items_left, my_cards, bank, opponent_bank, opponents_cards[0])
         root_node = Node(root_state)
 
-        best_child = self.get_best_child(root_node, 0)
+        best_child = self.get_best_child(root_node, 0, -float("inf"), float("inf"))
         best_next_state = best_child.state
         action = best_next_state.my_action
 
