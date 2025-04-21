@@ -1,0 +1,70 @@
+Assignment 1
+## Evaluation
+
+Each test is an evaluation over 5 seeds, with 100 games per seed.
+
+Test 1
+cardValues=(1, 2, 3, 4, 5, 6),itemValues=(-2, -1, 1, 2, 3, 4), opponent=random_agent.py
+Mean 3.18, Std 0.18, Best 3.37, Worst 2.86, Avg time: 0 s.
+
+Test 2
+cardValues=(1, 2, 3, 4, 5, 6),itemValues=(-2, -1, 1, 2, 3, 4), opponent=value_agent.py
+Mean 1.34, Std 0.25, Best 1.82, Worst 1.13, Avg time: 0 s.
+
+Test 3
+cardValues=(1, 2, 3, 4, 5, 6),itemValues=(-2, -1, 1, 2, 3, 4), opponent=valueplus_agent.py
+Mean 1.40, Std 0.16, Best 1.69, Worst 1.22, Avg time: 0 s.
+
+Test 4
+cardValues=(1, 2, 4, 8),itemValues=(-8, -2, 4, 16), opponent=random_agent.py
+Mean 8.84, Std 0.71, Best 10.22, Worst 8.26, Avg time: 0 s.
+
+Test 5
+cardValues=(1, 2, 4, 8),itemValues=(-8, -2, 4, 16), opponent=value_agent.py
+Mean 0.28, Std 0.21, Best 0.60, Worst 0.02, Avg time: 0 s.
+
+Test 6
+cardValues=(1, 2, 4, 8),itemValues=(-8, -2, 4, 16), opponent=valueplus_agent.py
+Mean 0.17, Std 0.16, Best 0.36, Worst -0.02, Avg time: 0 s.
+
+## Marks
+
+| Task | Mark | Out Of |
+| ------- | ---: | :--- |
+| Implementation    | 10 | / 10 |
+| Report            | 10 | / 10 |
+| Total             | 20 | / 20 |
+
+| Out of 10% | 10 | /10 |
+    
+## Comments
+
+### Implementation
+
+On six card games, your agent beat the random agent with an average score of 3.18. This is good! Your agent's minimum score against random is 2.86. This indicates your agent beats the random agent in all games played. Nice!
+
+On six card games, your agent beat the value agent with an average score of 1.34 and value plus agent with an average score of 1.40. Your agent never lost a game of six cards with my testing. Good work!
+
+On four card games, your agent always beat the random agent and value agent, and lost only very occasionally to the valueplus agent. Very impressive!
+
+Your agent consistently beats both the random and value agents, indicating your agent is highly effective and performs well.
+
+Interesting evaluation function! Have you considered the differences between different heuristics? i.e. something simple like the bank score vs something complex like the weighted average of the remaining cards in the pool... perhaps a different evaluation could improve your performance! Yet another aspect to tune...
+
+Your depth is reasonably low... considering the power of minimax arises from searching a tree, is it worthwhile bumping this up a little? It could help improve performance, at the cost of some additional time. Also considering all of your games ran in less than one second, you may have been able to increase the depth -- although your scores show this probably wasn't required.
+
+### Report
+
+Good explanation of the game and assignment specifications.
+
+Good explanation of the minimax strategy, demonstrates good understanding of the algorithm and the pros and cons.
+
+Good explanation of your agent strategy. Clear and concise without delving into the excruciating details of the code.
+
+Reasonable justification for why you selected the depth you did -- however I would not mind some data to back up your claims. Show me that, for example, a depth of 2 did not work as well as 4, or that a depth of 6 took too long to run!
+
+Good explanation of the role of the evaluation function. This is a critical part of minimax algorithms, so demonstrating understanding of its purpose is good. Again, show me data of you experimenting with different evaluations to demonstrate why yours is best!
+
+Nice exploration of your agent against the various other agents with different seeds. This kind of exploration demonstrates understanding of the potential variation that arises with both the game and random agent!
+
+Nice to note that alpha beta pruning indeed sped up your code -- this could be emphasised more!
